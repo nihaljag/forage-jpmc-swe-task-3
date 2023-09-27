@@ -12,12 +12,17 @@ export interface Row {
 
 
 export class DataManipulator {
+   static count =0;
+   static prev_avg =0.0;
   static generateRow(serverRespond: ServerRespond[]): Row {
       const priceABC = (serverRespond[0].top_ask.price + serverRespond[0].top_bid.price)/2;
       const priceDEF = (serverRespond[1].top_ask.price + serverRespond[1].top_bid.price)/2;
       const ratio = priceABC/priceDEF;
-      const upper_bound = 1+0.10;
-      const lower_bound = 1-0.10;
+      var avg_ratio = (this.prev_avg*this.count + ratio)/(this.count+1);
+      const upper_bound = this.count>365?avg_ratio*1.1:1.1; //Approximately 12 months of initial data wil not be affected asnotenough data to calculate average
+      const lower_bound = this.count>365?avg_ratio*0.9:0.9;
+      this.count++;
+      this.prev_avg = avg_ratio;
       return {
         price_abc: priceABC,
         price_def: priceDEF,
